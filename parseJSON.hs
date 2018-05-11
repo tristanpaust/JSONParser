@@ -5,7 +5,7 @@ import Text.Parsec.String
 
 type Name = String -- This is sort of the label of the object / sub-object
 
-data JSONData = JSONData Name JSON -- A JSON object has a label (Name) which is followed by colon + curly braces and data
+data JSONData = Label Name JSON -- A JSON object has a label (Name) which is followed by colon + curly braces and data
   deriving Show
 
 data Numbers = Fraction Float | Integer Int | Negative Int | Exponential String
@@ -45,7 +45,7 @@ parseJSONData = do
          <|>  str
          <|>  number
          )
-    return (JSONData name value)
+    return (Label name value)
 
 getName :: Parser Name
 getName = do 
@@ -72,7 +72,11 @@ str = do
     spaces
     return (Str string)
 
-parseStr = between (char '\"') (char '\"') (many $ noneOf "\"" <|> try (string "\"\"" >> return '"'))
+parseStr = do 
+    char '\"'
+    str <- many1 (noneOf "\"")
+    char '\"'
+    return str
 
 number :: Parser JSON
 number = do
